@@ -4,7 +4,7 @@
               To include a user specific buildfile here, simply create one in the same
               directory with the processing instruction <?eclipse.ant.import?>
               as the first entry and export the buildfile again. -->
-<project basedir="." default="build" name="Samp">
+<project basedir="." default="Sele2" name="Samp">
     <property environment="env"/>
     <property name="ECLIPSE_HOME" value="../../../../Applications/eclipse"/>
     <property name="junit.output.dir" value="junit"/>
@@ -53,7 +53,7 @@
         <pathelement location="../../Downloads/selenium-2.39.0 2/selenium-java-2.39.0-srcs.jar"/>
         <pathelement location="../../Downloads/selenium-2.39.0 2/selenium-java-2.39.0.jar"/>
     </path>
-    <target name="init">
+    <target name="init" depends="clean">
         <mkdir dir="bin"/>
         <copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
@@ -66,17 +66,17 @@
         <delete dir="bin"/>
     </target>
     <target depends="clean" name="cleanall"/>
-    <target depends="build-subprojects,build-project" name="build"/>
-    <target name="build-subprojects"/>
-    <target depends="init" name="build-project">
+    <target depends="init" name="build"/>
+    <target name="build-subprojects" depends="build"/>
+    <target depends="build-subprojects" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
             <src path="src"/>
             <classpath refid="Samp.classpath"/>
         </javac>
     </target>
-    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects" depends="build-project"/>
+    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler" depends="build-refprojects">
         <copy todir="${ant.library.dir}">
             <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
         </copy>
@@ -85,11 +85,11 @@
             <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
         </unzip>
     </target>
-    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
+    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler" depends="init-eclipse-compiler">
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
     </target>
-    <target name="Sele1">
+    <target name="Sele1" depends="build-eclipse-compiler">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" printsummary="withOutAndErr">
             <formatter type="xml"/>
@@ -102,7 +102,7 @@
             <classpath refid="Samp.classpath"/>
         </java>
     </target>
-    <target name="Sele2">
+    <target name="Sele2" depends="Sele1">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" printsummary="withOutAndErr">
             <formatter type="xml"/>
